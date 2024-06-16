@@ -1,0 +1,79 @@
+---
+title: "Data clening"
+author: Xinghan Liu
+date: 2023/06
+output: word_document
+---
+``` {r, echo = T}
+"Section 1: Description of the data. This data I used is a comma-separated values (CSV) file containing health information for individuals' HeartDisease conditions.The dataset originally comes from the CDC and is a major part of the Behavioral Risk Factor Surveillance System (BRFSS). Factors like BMI, Physical Health,and Mental Health are contineous variables. Other lifestyle habits like smoking, alcoholm Diabetic,Physical Activity and General Health are binary variables.Age is category variable.  The data is in a flat file that is delimited, each data point within a record is separated by a specific character- comma (',')."
+
+```
+
+```{r setup, include = T}
+library(ggplot2)
+library(dplyr)
+```
+
+```{r, include = T}
+#Section 2: Reading the data into R. This next line is reading data by using base R command - read.csv. And then I used dplyr to create a subset called 'dropped' of the original data, it drooped the last two variables. 
+
+datanew = read.csv('/Users/hankhan688/Documents/heart_2020_cleaned.csv')
+dropped <- datanew %>% select(-KidneyDisease, -SkinCancer)
+```
+
+```{r, echo = T}
+#Section 3: Clean the data. I changed the value of variables "HeartDisease", "Smoking", "AlcoholDrinking", "Stroke" from " Yes/No" to "1 or 0". And also renamed the two vriables.
+
+dropped[, c("HeartDisease", "Smoking", "AlcoholDrinking", "Stroke")] <- 
+  lapply(dropped[, c("HeartDisease", "Smoking", "AlcoholDrinking", "Stroke")], 
+         function(x) ifelse(x == "Yes", 1, 0))
+renamed <- dropped %>%
+  rename("Alcohol" = "AlcoholDrinking",
+         "Age" = "AgeCategory")
+
+```
+
+```{r, echo = T}
+#Section 4: Characteristics of the data. 
+
+cat("The dataset has", nrow(renamed), "rows and", ncol(renamed), "columns. The names of the columns and a brief description of each are in the table below:\n")
+
+column_descriptions <- c(
+  "HeartDisease - Have heart disease(1) or not(0) ",
+  "BMI- Body Mass Index",
+  "Smoking - Smoking status Yes(1)/ No(0)",
+  "Alcohol -Alcohol consumption Yes(1)/ No(0)",
+  "Stroke - Stroke history Yes(1)/ No(0)",
+  "PhysicalHealth - Days of poor physical health in a month",
+  "MentalHealth - Days of poor mental health in a month",
+  "DiffWalking - Difficulty climbing stairs",
+  "Sex - Gender (Male/Female)",
+  "age - Age category",
+  "Race - Different race",
+  "Diabetic - Diabetic status (Yes/No)",
+  "PhysicalActivity - Physical activity in past 30 days (Yes/No)",
+  "GenHealth - General health perception",
+  "SleepTime - Number of hours of sleep",
+  "Asthma - Asthma history (Yes/No)"
+)
+
+data_table <- data.frame(
+  Variable = names(renamed),
+  Description = column_descriptions
+)
+
+library(knitr)
+
+kable(data_table, caption = "Data Dictionary")
+```
+
+```{r, echo = T}
+#Section 5: Summary statistics. I coshed "BMI", "PhysicalHealth", "SleepTime" these three variables:
+choosedcol <- c("BMI", "PhysicalHealth", "SleepTime")
+subset_data <- renamed[, choosedcol]
+
+# Calculate summary statistics (excluding missing values)
+summary_results <- summary(subset_data, na.rm = TRUE)
+print(summary_results)
+```
+
